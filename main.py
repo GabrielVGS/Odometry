@@ -4,7 +4,7 @@ import math
 from ev3dev2.motor import *
 from ev3dev2.sensor import *
 from ev3dev2.sensor.lego import *
-from odometrium import Odometrium # implementação da odometria para localizar o robo em cordenadas (x,y)
+from module1 import Odometrium # implementação da odometria para localizar o robo em cordenadas (x,y)
 
 #https://github.com/sterereo/odometrium/tree/master <- documentação 
 
@@ -22,18 +22,24 @@ pos_info = Odometrium(left='A',right="B",wheel_diameter=5.6,wheel_distance=15.2,
 
 ODO = 15.2/5.6
 
-v_turn = 35
+v_turn = 20
 
-def rotate(num):
+def rotate(num,velocidade_turn):
     degrees = num * ODO
     tank.on_for_degrees(velocidade_turn, -velocidade_turn, degrees)
+    left_motor.wait_while('running', 5000)
+    
+    tank.stop()
+
+#TODO 
+
+#corrigir a rotação e o andamento do robo por odometria
     
     left_motor.wait_while('running', 5000)
     
     tank.stop()
- 
-while True:
-  pos_info.move(right = 500,left = 500, time = 5)
-  time.sleep(0.5)
-  rotate(90)
 
+#TODO 
+
+#corrigir a rotação e o andamento do robo por odometria
+    
