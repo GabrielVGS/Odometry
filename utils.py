@@ -10,17 +10,17 @@ class Robot(MoveSteering):
         MoveTank.__init__(self, left_motor_port, right_motor_port, desc, motor_class)
         self.wheel_distance = wheel_distance
         self.wheel_dm = wheel_dm
-        self.odo = self.wheel_distance / self.wheel_dm
         self.wheel_circumference = wheel_dm * math.pi
+        self.C = self.wheel_distance * math.pi
+        #GYRO
         self._gyro = None
+
+        # Odometria
         self.pos_info = Odometrium(left='B', right='C', wheel_diameter=5.6, wheel_distance=15.2,
-                      count_per_rot_left=360, count_per_rot_right=360, debug=True,
+                      count_per_rot_left=None, count_per_rot_right=360, debug=False,
                       curve_adjustment=.873)
         
 
-        self.theta = self.pos_info.orientation
-        self.x = self.pos_info.x
-        self.y = self.pos_info.y
         self.left_motor = LargeMotor(left_motor_port)
         self.right_motor = LargeMotor(right_motor_port)
 
@@ -30,7 +30,23 @@ class Robot(MoveSteering):
         MoveSteering.on_for_rotations(self,steering,speed,rotations,brake,block)
 
     def rotate(self,n,steering,v):
-        C = self.wheel_distance * math.pi
-        arc = (n) * C
+        arc = (n) * self.C
         degrees = (arc/self.wheel_circumference)
         MoveSteering.on_for_degrees(self,steering,v,degrees)
+        self.left_motor.wait_while('running', 5000)
+        MoveSteering.stop(self)
+
+    def move(self,distance,direction,v,use_gyro = True,factor = 10):
+        degrees = (distance/self.wheel_circumference) * 360
+        target = self.left_motor.position + degrees
+
+        if use_gyro:
+            while self.left_motor.position <= target:
+                error = (direction - self._gyro.angle) * factor
+                error = max(min(error,100), -100) #Corrige pra não passar do intervalo [-100,100]
+                MoveSteering.on(self,error,v)
+            MoveSteering.stop(self)
+
+        else:
+            raise NotImplementedError 
+ 
