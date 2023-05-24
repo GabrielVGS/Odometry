@@ -1,45 +1,30 @@
-# Import the necessary libraries
 import time
 import math
 from ev3dev2.motor import *
+from ev3dev2.sound import Sound
+from ev3dev2.button import Button
 from ev3dev2.sensor import *
 from ev3dev2.sensor.lego import *
-from module1 import Odometrium # implementação da odometria para localizar o robo em cordenadas (x,y)
+from ev3dev2.sensor.virtual import *
+from odometrium import *
+from utils import *
 
-#https://github.com/sterereo/odometrium/tree/master <- documentação 
+from time import sleep
 
-
-# Create the sensors and motors objects
-left_motor = LargeMotor(OUTPUT_A)
-right_motor = LargeMotor(OUTPUT_B)
-left_motor.stop_action = "hold"
-right_motor.stop_action = "hold"
-tank = MoveTank(OUTPUT_A,OUTPUT_B)
-pos_info = Odometrium(left='A',right="B",wheel_diameter=5.6,wheel_distance=15.2,
-                      count_per_rot_left=None,count_per_rot_right=360,debug=False,
-                      curve_adjustment=1)
-
-
-ODO = 15.2/5.6
-
-v_turn = 20
-
-def rotate(num,velocidade_turn):
-    degrees = num * ODO
-    tank.on_for_degrees(velocidade_turn, -velocidade_turn, degrees)
-    left_motor.wait_while('running', 5000)
-    
-    tank.stop()
-
-#TODO 
-
-#corrigir a rotação e o andamento do robo por odometria
-    
-    left_motor.wait_while('running', 5000)
-    
-    tank.stop()
-
-#TODO 
-
-#corrigir a rotação e o andamento do robo por odometria
-    
+# left='B'                  the left wheel is connected to port B
+# right='C'                 the right wheel is connected to port C
+# wheel_diameter=5.5        the wheel diameter is 5.5cm
+# wheel_distance=12         the wheel distance is 12cm
+# unit sidenote: as long as you are consistent, you can also use mm, inches, km.
+# returned values are in these units
+# counts per rotation are is the number of motor-internal 'tacho-counts'
+# that the motor has to travel for one full revolution
+# this is motor specific
+#
+# count_per_rot_left=None   use the default value returned by the motor for the left motor
+# count_per_rot_right=360   for the right motor treat 360 tacho counts as one full revolution
+# debug=False               print the current position (on motor speed change) and
+#                           echo all the movement logs when the object is destroyed
+# curve_adjustment=0.873    use curve adjustment factor of 0.873, see below ('percision')  
+robot = Robot(OUTPUT_A,OUTPUT_B)
+robot.rotate(90,100,20)
