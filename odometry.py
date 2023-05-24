@@ -1,10 +1,11 @@
 from math import pi, sin, cos, sqrt
+import math
 from ev3dev2.motor import *
 import time
 
 
 class Odometry:
-    def __init__(self, left=None, right=None, wheel_diameter=5.6, wheel_distance=12, count_per_rot_left=None, count_per_rot_right=None, debug=False) -> None:
+    def __init__(self, left=None, right=None, wheel_diameter=5.6, wheel_distance=15.2, count_per_rot_left=None, count_per_rot_right=None, debug=False) -> None:
 
         #motores
         self.left_motor = LargeMotor(left)
@@ -21,7 +22,7 @@ class Odometry:
         self.ticks_left = count_per_rot_left
         #
         self.C = wheel_distance * pi
-        self.cm_per_tick = self.wheel_circumference / (self.ticks_right + self.ticks_left) / 2
+        self.cm_per_tick = self.wheel_circumference / 360
 
         #debug 
         self.debug = debug
