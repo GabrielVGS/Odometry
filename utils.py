@@ -7,7 +7,7 @@ import math
 
 class Robot(MoveSteering):
     def __init__(self,left_motor_port,right_motor_port,wheel_distance = 15.2,wheel_dm = 5.6,desc=None,motor_class=LargeMotor):
-        MoveTank.__init__(self, left_motor_port, right_motor_port, desc, motor_class)
+        MoveSteering.__init__(self, left_motor_port, right_motor_port, desc, motor_class)
         self.wheel_distance = wheel_distance
         self.wheel_dm = wheel_dm
         self.wheel_circumference = wheel_dm * math.pi
