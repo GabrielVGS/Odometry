@@ -3,50 +3,47 @@ from ev3dev2.sensor import *
 from ev3dev2.sensor.lego import *
 from odometrium import *
 import math
-
+import time
 
 class Robot(MoveSteering):
-    def __init__(self,left_motor_port,right_motor_port,wheel_distance = 15.2,wheel_dm = 5.6,desc=None,motor_class=LargeMotor):
+    def __init__(self, left_motor_port, right_motor_port, wheel_distance=15.2, wheel_diam=5.6, desc=None, motor_class=LargeMotor):
         MoveSteering.__init__(self, left_motor_port, right_motor_port, desc, motor_class)
-        self.wheel_distance = wheel_distance
-        self.wheel_dm = wheel_dm
-        self.wheel_circumference = wheel_dm * math.pi
-        self.C = self.wheel_distance * math.pi
-        #GYRO
-        self._gyro = None
-
-        # Odometria
-        self.pos_info = Odometrium(left='B', right='C', wheel_diameter=5.6, wheel_distance=15.2,
-                      count_per_rot_left=None, count_per_rot_right=360, debug=False,
-                      curve_adjustment=.873)
+        #Medidas do robo e rodas
+        self.wheel_distance = wheel_distance  # Distância entre as rodas do robô
+        self.wheel_diam = wheel_diam  # Diâmetro das rodas do robô
+        self.wheel_radius = wheel_diam / 2  # Raio das rodas do robô
+        self.wheel_circumference = wheel_diam * math.pi  # Circunferência das rodas do robô
+        self.C = wheel_distance * math.pi  # Circunferência do círculo de rotação completo do robô
         
 
-        self.left_motor = LargeMotor(left_motor_port)
-        self.right_motor = LargeMotor(right_motor_port)
+        # GYRO
+        self._gyro = None  # Sensor giroscópio (não está implementado no código fornecido)
 
 
-    def on_for_distance(self,steering,speed,distance,brake=True,block = True):
-        rotations = distance / self.wheel_circumference
-        MoveSteering.on_for_rotations(self,steering,speed,rotations,brake,block)
+        self.left_motor = LargeMotor(left_motor_port)  # Motor esquerdo
+        self.right_motor = LargeMotor(right_motor_port)  # Motor direito
 
-    def rotate(self,n,steering,v):
-        arc = (n) * self.C
-        degrees = (arc/self.wheel_circumference)
-        MoveSteering.on_for_degrees(self,steering,v,degrees)
-        self.left_motor.wait_while('running', 5000)
-        MoveSteering.stop(self)
+    def on_for_distance(self, steering, speed, distance, brake=True, block=True):
+        rotations = distance / self.wheel_circumference  # Número de rotações necessárias para percorrer a distância
+        MoveSteering.on_for_rotations(self, steering, speed, rotations, brake, block)
 
-    def move(self,distance,direction,v,use_gyro = True,factor = 10):
-        degrees = (distance/self.wheel_circumference) * 360
-        target = self.left_motor.position + degrees
+    def rotate(self, n, steering, vel):
+        arc = (n) * self.C  # Comprimento do arco a ser percorrido em uma rotação completa
+        degrees = (arc / self.wheel_circumference)  # Número de graus a serem girados
+        MoveSteering.on_for_degrees(self, steering, vel, degrees)  # Gira o robô pelo número de graus especificado
+        self.left_motor.wait_while('running', 5000)  # Aguarda até que o motor esquerdo pare de girar
+        MoveSteering.stop(self)  # Para o movimento do robô
+
+    def move(self, distance, direction, vel, use_gyro=True, factor=10):
+        degrees = (distance / self.wheel_circumference) * 360  # Número de graus a serem percorridos
+        target = self.left_motor.position + degrees  # Posição de destino para o movimento
 
         if use_gyro:
             while self.left_motor.position <= target:
-                error = (direction - self._gyro.angle) * factor
-                error = max(min(error,100), -100) #Corrige pra não passar do intervalo [-100,100]
-                MoveSteering.on(self,error,v)
-            MoveSteering.stop(self)
+                error = (direction - self._gyro.angle) * factor  # Cálculo do erro para correção com o uso do giroscópio
+                error = max(min(error, 100), -100)  # Limita o erro no intervalo [-100, 100]
+                MoveSteering.on(self, error, vel)  # Move o robô com base no erro e na velocidade
+            MoveSteering.stop(self)  # Para o movimento do robô
 
         else:
-            raise NotImplementedError 
- 
+            raise NotImplementedError("Não implementado")  # Lança uma exceção se o uso do giroscópio não estiver implementado
